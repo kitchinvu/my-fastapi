@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: fastapi_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: user_management
+      MYSQL_USER: fastapi_user
+      MYSQL_PASSWORD: fastapi_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app_network
+
+  fastapi:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fastapi_app
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: mysql+pymysql://fastapi_user:fastapi_password@mysql:3306/user_management
+      PROJECT_NAME: "User Management API"
+      DEBUG: "True"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app/app
+    networks:
+      - app_network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+
+networks:
+  app_network:
+    driver: bridge
