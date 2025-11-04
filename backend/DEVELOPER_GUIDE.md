@@ -16,6 +16,14 @@
 8. [Authentication & Authorization](#authentication--authorization)
 ---
 
+## Quick Start
+```bash
+git clone <repo>
+cd my-fastapi/backend
+cp .env.example .env    # ← สร้างไฟล์ .env
+cd ..
+docker compose up --build
+
 ## 1. การติดตั้งโปรแกรมและ Dependencies
 
 ### 🤔 คำถาม: ทำไมต้องติดตั้ง Python ด้วย? ใช้แค่ Docker ไม่ได้เหรอ?
