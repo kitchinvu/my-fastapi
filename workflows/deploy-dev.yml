@@ -1,0 +1,98 @@
+name: Auto Deploy to Development
+
+on:
+  push:
+    branches: [ develop ]
+
+jobs:
+  deploy-dev:
+    name: Deploy to Dev Server
+    runs-on: ubuntu-latest
+    environment:
+      name: development
+      url: http://${{ secrets.DEV_SERVER_HOST }}:8000
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Development Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DEV_SERVER_HOST }}
+          username: ${{ secrets.DEV_SERVER_USER }}
+          key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            echo "🚀 Starting deployment to Development Server..."
+
+            # Navigate to project directory
+            cd /app/admin-portal
+
+            # Stash any local changes
+            git stash
+
+            # Pull latest code from develop branch
+            echo "📥 Pulling latest code from develop branch..."
+            git fetch origin develop
+            git checkout develop
+            git pull origin develop
+
+            # Navigate to backend folder
+            cd backend
+
+            # Check if .env exists
+            if [ ! -f .env ]; then
+              echo "⚠️  .env file not found! Copying from .env.example..."
+              cp .env.example .env
+              echo "Please update .env file with proper values!"
+            fi
+
+            # Rebuild and restart containers
+            echo "🔄 Rebuilding and restarting Docker containers..."
+            docker compose down
+            docker compose up -d --build
+
+            # Wait for services to be ready
+            echo "⏳ Waiting for services to start..."
+            sleep 15
+
+            # Check container status
+            echo "📊 Container Status:"
+            docker compose ps
+
+            # Check API health
+            echo "🏥 Running health check..."
+            for i in {1..10}; do
+              if curl -f http://localhost:8000/health; then
+                echo ""
+                echo "✅ Health check passed!"
+                break
+              fi
+              echo "Attempt $i/10 - waiting..."
+              sleep 3
+            done
+
+            # Show recent logs
+            echo "📋 Recent logs:"
+            docker compose logs --tail=20 fastapi
+
+            echo "✅ Deployment to Development Server completed!"
+
+      - name: Deployment Summary
+        if: success()
+        run: |
+          echo "### ✅ Deployment Successful!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** Development" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** develop" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** http://${{ secrets.DEV_SERVER_HOST }}:8000" >> $GITHUB_STEP_SUMMARY
+
+      - name: Deployment Failed
+        if: failure()
+        run: |
+          echo "### ❌ Deployment Failed!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Please check the logs above for error details." >> $GITHUB_STEP_SUMMARY
+          echo "You may need to SSH into the server to investigate further." >> $GITHUB_STEP_SUMMARY
