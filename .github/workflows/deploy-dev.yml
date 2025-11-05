@@ -3,14 +3,13 @@ name: Auto Deploy to Development
 on:
   push:
     branches: [ develop ]
+  workflow_dispatch:
 
 jobs:
   deploy-dev:
     name: Deploy to Dev Server
     runs-on: ubuntu-latest
-    environment:
-      name: development
-      url: http://${{ secrets.DEV_SERVER_HOST }}:8000
+    environment: development
 
     steps:
       - name: Checkout code
