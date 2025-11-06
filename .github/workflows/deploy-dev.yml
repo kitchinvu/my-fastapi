@@ -28,6 +28,9 @@ jobs:
             # Navigate to project directory
             cd /app/admin-portal
 
+            # Fix git ownership issue
+            git config --global --add safe.directory /app/admin-portal
+
             # Stash any local changes
             git stash
 
