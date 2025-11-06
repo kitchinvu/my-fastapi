@@ -48,9 +48,10 @@ def health_check() -> dict:
         "version": settings.API_VERSION
     }
 
+xxxxxdsdslkdsl
 
 # Include routers
-app.include_router(auth_router)
+app.include_router(auth_routerdsds)
 app.include_router(users_router)
 app.include_router(posts_router)
 app.include_router(files_router)
