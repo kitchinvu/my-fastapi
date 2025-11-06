@@ -33,9 +33,11 @@ jobs:
 
             # Pull latest code from develop branch
             echo "📥 Pulling latest code from develop branch..."
-            git fetch origin develop
+            echo "Current commit: $(git log -1 --oneline)"
+            git fetch origin --prune
             git checkout develop
-            git pull origin develop
+            git reset --hard origin/develop
+            echo "✅ Updated to commit: $(git log -1 --oneline)"
 
             # Navigate to backend folder
             cd backend
