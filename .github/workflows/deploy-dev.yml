@@ -15,6 +15,36 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'uv'
+          cache-dependency-path: backend/uv.lock
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Sync Python dependencies
+        working-directory: backend
+        run: uv sync
+
+      - name: Lint with Ruff
+        working-directory: backend
+        run: uv run ruff check app/ tests/
+
+      - name: Type-check with mypy
+        working-directory: backend
+        run: uv run mypy app/
+
+      - name: Compile sources (syntax gate)
+        working-directory: backend
+        run: uv run python -m compileall app
+
+      - name: Run tests
+        working-directory: backend
+        run: uv run pytest tests/ -v
+
       - name: Deploy to Development Server
         uses: appleboy/ssh-action@master
         with:
