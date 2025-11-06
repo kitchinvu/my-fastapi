@@ -43,7 +43,7 @@ def health_check() -> dict:
         Health status of the API.
     """
     return {
-        "status": "healthy kit 222",
+        "status": "healthy kit 333",
         "service": settings.PROJECT_NAME,
         "version": settings.API_VERSION
     }
