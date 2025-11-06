@@ -14,7 +14,6 @@ app = FastAPI(
     description="User Management REST API with CRUD operations",
     debug=settings.DEBUG
 )
-asdsadsadsadasdsadsadsadasdsad
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
